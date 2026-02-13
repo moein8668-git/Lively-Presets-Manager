@@ -47,30 +47,33 @@ const getPresetsDir = async () => {
 // Helper to resolve Lively paths
 const getLivelyPaths = () => {
     const localAppData = process.env.LOCALAPPDATA;
-    // Common base path for Lively Store version
-    const baseX = path.join(localAppData, 'Packages');
 
-    // We need to find the specific folder which might vary slightly in random string
-    // But usually it starts with 12030rocksdanister.LivelyWallpaper
-    let livelyDir = '';
+    // 1. Try EXE / portable version first
+    const exePath = path.join(localAppData, 'Lively Wallpaper');
+    if (fs.existsSync(exePath)) {
+        return {
+            wallpapersDir: path.join(exePath, 'Library', 'wallpapers'),
+            saveDataDir: path.join(exePath, 'Library', 'SaveData', 'wpdata')
+        };
+    }
+
+    // 2. Fallback to Microsoft Store version
+    const baseX = path.join(localAppData, 'Packages');
     if (fs.existsSync(baseX)) {
         const dirs = fs.readdirSync(baseX);
         const found = dirs.find(d => d.startsWith('12030rocksdanister.LivelyWallpaper'));
         if (found) {
-            livelyDir = path.join(baseX, found, 'LocalCache', 'Local', 'Lively Wallpaper');
+            const livelyDir = path.join(baseX, found, 'LocalCache', 'Local', 'Lively Wallpaper');
+            return {
+                wallpapersDir: path.join(livelyDir, 'Library', 'wallpapers'),
+                saveDataDir: path.join(livelyDir, 'Library', 'SaveData', 'wpdata')
+            };
         }
     }
 
-    if (!livelyDir) {
-        const err = 'Lively Wallpaper directory not found.';
-        log(err);
-        throw new Error(err);
-    }
-
-    return {
-        wallpapersDir: path.join(livelyDir, 'Library', 'wallpapers'),
-        saveDataDir: path.join(livelyDir, 'Library', 'SaveData', 'wpdata')
-    };
+    const err = 'Lively Wallpaper directory not found.';
+    log(err);
+    throw new Error(err);
 };
 
 // Get list of installed wallpapers
@@ -189,17 +192,12 @@ const saveWallpaperConfig = async (id, config, monitorId) => {
     const { saveDataDir } = getLivelyPaths();
     const wallpaperSaveDir = path.join(saveDataDir, id);
 
-    // If monitorId is provided, save only to that monitor
-    // If NOT provided, or specific flag used, we could save to ALL monitors (optional feature)
-    // For now, let's enforce monitorId or default to '1' if available but warn.
-
     if (!monitorId) {
         throw new Error('Monitor ID is required to apply configuration.');
     }
 
     const configPath = path.join(wallpaperSaveDir, monitorId, 'LivelyProperties.json');
 
-    // Safety check: ensure file exists before overwriting, or at least folder exists
     await fs.ensureDir(path.dirname(configPath));
     await fs.writeJson(configPath, config, { spaces: 2 });
     log(`Applied config to ${id} on monitor ${monitorId}`);
@@ -236,13 +234,12 @@ const savePreset = async (wallpaperId, presetName, configData, sourceMonitorId) 
         currentPresets = await fs.readJson(wallpaperPresetsFile);
     }
 
-    // Upsert logic
     const existingIndex = currentPresets.findIndex(p => p.name === presetName);
     const newPreset = {
-        id: Date.now().toString(), // Simple ID
+        id: Date.now().toString(),
         name: presetName,
         config: configData,
-        sourceMonitor: sourceMonitorId, // record where it came from
+        sourceMonitor: sourceMonitorId,
         updatedAt: new Date().toISOString()
     };
 
@@ -250,7 +247,7 @@ const savePreset = async (wallpaperId, presetName, configData, sourceMonitorId) 
         currentPresets[existingIndex] = {
             ...currentPresets[existingIndex],
             ...newPreset,
-            id: currentPresets[existingIndex].id // keep original ID 
+            id: currentPresets[existingIndex].id
         };
     } else {
         currentPresets.push(newPreset);
