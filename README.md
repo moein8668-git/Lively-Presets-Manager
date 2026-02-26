@@ -31,3 +31,17 @@ This is an unofficial utility and is not affiliated with, endorsed by, or connec
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. It is free forever and open for anyone to modify.
+
+## ❤️ Support the Project
+
+This project is open-source and developed in my free time. If you find the **Lively-Presets-Manager** useful, please consider supporting its development!
+
+### Cryptocurrency Donations
+
+| Coin | Address |
+| :--- | :--- |
+| **Bitcoin (BTC)** | `bc1q5l70mhm77sqst6r4tkvmwqx4lmr0fc6ex64enc`|
+| **Ethereum (ETH)** | `0x9598F7cF3ee2dAad2a06b808980FD8182cC73311`|
+| **Solana (SOL)** | `36CdEL4rdtqX6PQdx7eYejbVBaoBPt8xEh8u4qncX6ML`|
+| **TRON (TRX)** | `TD9tPyd6DpinMnkiQBaXKxCcunCDQyvyFz`|
+| **Toncoin (TON)** | `UQDb9vadr4Kd14dMtRcrOiZzYqAfT2MeOzcciUC1Sw_3XG69`|
